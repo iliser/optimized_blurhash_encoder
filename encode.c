@@ -21,46 +21,46 @@ const char *blurHashForPixels(int xComponents, int yComponents, int width, int h
 
 	float factors[yComponents][xComponents][3];
 	memset(factors, 0, sizeof(factors));
-    
+	
 
-    // all code bellow is just reordering of loop and operation
+	// all code bellow is just reordering of loop and operation
 
-    // assembly factor pixel information 
-    float r,g,b;
-    for(int y = 0; y < height; ++y) {
+	// assembly factor pixel information 
+	float r,g,b;
+	for(int y = 0; y < height; ++y) {
 		for(int x = 0; x < width; ++x) {
-            // with loop revert this convert operation execute only once per channel vs yComponents * xComponents times before
+			// with loop revert this convert operation execute only once per channel vs yComponents * xComponents times before
 			r = sRGBToLinear(rgb[3 * x + 0 + y * bytesPerRow]);
 			g = sRGBToLinear(rgb[3 * x + 1 + y * bytesPerRow]);
 			b = sRGBToLinear(rgb[3 * x + 2 + y * bytesPerRow]);
-            
-            // extract this factor from inner loop give another ~30% boost
-            float yf = M_PI * y / height;
-            float xf = M_PI * x / width;
+			
+			// extract this factor from inner loop give another ~30% boost
+			float yf = M_PI * y / height;
+			float xf = M_PI * x / width;
 
-            // order of internal loop does't care cause of `cos` is `high cost` operation
-            for(int yc = 0; yc < yComponents; ++yc) {
-                for(int xc = 0; xc < xComponents; ++xc) {
-                    float basis = cosf(xf * xc) * cosf(yf * yc );
+			// order of internal loop does't care cause of `cos` is `high cost` operation
+			for(int yc = 0; yc < yComponents; ++yc) {
+				for(int xc = 0; xc < xComponents; ++xc) {
+					float basis = cosf(xf * xc) * cosf(yf * yc );
 
-                    factors[yc][xc][0] += basis * r;
-                    factors[yc][xc][1] += basis * g;
-                    factors[yc][xc][2] += basis * b;
-                }
-            }
-        }
-    }
+					factors[yc][xc][0] += basis * r;
+					factors[yc][xc][1] += basis * g;
+					factors[yc][xc][2] += basis * b;
+				}
+			}
+		}
+	}
 
-    // normalization step, before optimization it placed in the end of multiplyBasisFunction
-    for(int yc = 0; yc < yComponents; yc++) {
-        for(int xc = 0; xc < xComponents; xc++) {
-            float normalisation = (xc == 0 && yc == 0) ? 1 : 2;
-            float scale = normalisation / (width * height);
-            factors[yc][xc][0] *= scale;
-            factors[yc][xc][1] *= scale;
-            factors[yc][xc][2] *= scale;
-        }
-    }
+	// normalization step, before optimization it placed in the end of multiplyBasisFunction
+	for(int yc = 0; yc < yComponents; yc++) {
+		for(int xc = 0; xc < xComponents; xc++) {
+			float normalisation = (xc == 0 && yc == 0) ? 1 : 2;
+			float scale = normalisation / (width * height);
+			factors[yc][xc][0] *= scale;
+			factors[yc][xc][1] *= scale;
+			factors[yc][xc][2] *= scale;
+		}
+	}
 
 
 	float *dc = factors[0][0];
