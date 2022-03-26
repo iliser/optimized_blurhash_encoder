@@ -1,10 +1,10 @@
 PROGRAM=blurhash_encoder
 DECODER=blurhash_decoder
-$(PROGRAM): encode_stb.c encode.c encode.h stb_image.h common.h
-	$(CC) -o $@ encode_stb.c encode.c -lm -O3
+$(PROGRAM): src/encode_stb.c src/encode.c src/encode.h src/stb_image.h src/common.h
+	$(CC) -o $@ src/encode_stb.c src/encode.c -lm -Ofast -march=native -fno-math-errno
 
-$(DECODER): decode_stb.c decode.c decode.h stb_writer.h common.h
-	$(CC) -o $(DECODER) decode_stb.c decode.c -lm
+$(DECODER): src/decode_stb.c src/decode.c src/decode.h src/stb_writer.h src/common.h
+	$(CC) -o $(DECODER) src/decode_stb.c src/decode.c -lm -O3 -ffast-math
 
 .PHONY: clean
 clean:

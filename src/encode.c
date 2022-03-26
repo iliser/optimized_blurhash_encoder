@@ -1,10 +1,16 @@
 #include "encode.h"
 #include "common.h"
 
+#include <emmintrin.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+
+
+#include "fast_cos.h"
 
 static float *multiplyBasisFunction(int xComponent, int yComponent, int width, int height, float *rgb, size_t bytesPerRow);
 static char *encode_int(int value, int length, char *destination);
@@ -14,17 +20,18 @@ static int encodeAC(float r, float g, float b, float maximumValue);
 
 
 const char *blurHashForPixels(int xComponents, int yComponents, int width, int height, uint8_t *rgb, size_t bytesPerRow) {
-	static char buffer[2 + 4 + (9 * 9 - 1) * 2 + 1];
-
+	// calculate factors
 	if(xComponents < 1 || xComponents > 9) return NULL;
 	if(yComponents < 1 || yComponents > 9) return NULL;
+    
 
-	float factors[yComponents][xComponents][3];
+    size_t biases = 4;
+	float factors[yComponents][xComponents][biases];
 	memset(factors, 0, sizeof(factors));
 	
+    
 
 	// all code bellow is just reordering of loop and operation
-
 	// assembly factor pixel information 
 	float r,g,b;
 	for(int y = 0; y < height; ++y) {
@@ -41,8 +48,8 @@ const char *blurHashForPixels(int xComponents, int yComponents, int width, int h
 			// order of internal loop does't care cause of `cos` is `high cost` operation
 			for(int yc = 0; yc < yComponents; ++yc) {
 				for(int xc = 0; xc < xComponents; ++xc) {
-					float basis = cosf(xf * xc) * cosf(yf * yc );
-
+					float basis = fast_cos(xf * xc) * fast_cos(yf * yc);
+                    
 					factors[yc][xc][0] += basis * r;
 					factors[yc][xc][1] += basis * g;
 					factors[yc][xc][2] += basis * b;
@@ -64,8 +71,11 @@ const char *blurHashForPixels(int xComponents, int yComponents, int width, int h
 
 
 	float *dc = factors[0][0];
-	float *ac = dc + 3;
+	float *ac = dc + biases;
 	int acCount = xComponents * yComponents - 1;
+
+	// generate string representation
+	static char buffer[2 + 4 + (9 * 9 - 1) * 2 + 1];
 	char *ptr = buffer;
 
 	int sizeFlag = (xComponents - 1) + (yComponents - 1) * 9;
@@ -74,7 +84,7 @@ const char *blurHashForPixels(int xComponents, int yComponents, int width, int h
 	float maximumValue;
 	if(acCount > 0) {
 		float actualMaximumValue = 0;
-		for(int i = 0; i < acCount * 3; i++) {
+		for(int i = 0; i < acCount * biases; i++) {
 			actualMaximumValue = fmaxf(fabsf(ac[i]), actualMaximumValue);
 		}
 
@@ -89,7 +99,7 @@ const char *blurHashForPixels(int xComponents, int yComponents, int width, int h
 	ptr = encode_int(encodeDC(dc[0], dc[1], dc[2]), 4, ptr);
 
 	for(int i = 0; i < acCount; i++) {
-		ptr = encode_int(encodeAC(ac[i * 3 + 0], ac[i * 3 + 1], ac[i * 3 + 2], maximumValue), 2, ptr);
+		ptr = encode_int(encodeAC(ac[i * biases + 0], ac[i * biases + 1], ac[i * biases + 2], maximumValue), 2, ptr);
 	}
 
 	*ptr = 0;
