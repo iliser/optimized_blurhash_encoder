@@ -3,37 +3,40 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_writer.h"
 
-int main(int argc, char **argv) {
-	if(argc < 5) {
-		fprintf(stderr, "Usage: %s hash width height output_file [punch]\n", argv[0]);
-		return 1;
-	}
+#include <iostream>
 
-	int width, height, punch = 1;
-	char * hash = argv[1];
-	width = atoi(argv[2]);
-	height = atoi(argv[3]);
-	char * output_file = argv[4];
+int main(int argc, char **argv)
+{
+    if (argc < 5)
+    {
+        std::cerr << "Usage: " << argv[0] << " hash width height output_file [punch]\n";
+        return 1;
+    }
 
-	const int nChannels = 4;
+    int width, height, punch = 1;
+    std::string_view hash = argv[1];
+    width = std::stoi(argv[2]);
+    height = std::stoi(argv[3]);
+    std::string_view output_file = argv[4];
 
-	if(argc == 6)
-		punch = atoi(argv[5]);
+    const int nChannels = 4;
 
-	uint8_t * bytes = decode(hash, width, height, punch, nChannels);
+    if (argc == 6)
+        punch = std::stoi(argv[5]);
 
-	if (!bytes) {
-		fprintf(stderr, "%s is not a valid blurhash, decoding failed.\n", hash);
-		return 1;
-	}
+    auto bytes = decode(hash, width, height, punch, nChannels);
 
-	if (stbi_write_png(output_file, width, height, nChannels, bytes, nChannels * width) == 0) {
-		fprintf(stderr, "Failed to write PNG file %s\n", output_file);
-		return 1;
-	}
+    if (!bytes)
+    {
+        std::cerr << hash << " is not a valid blurhash, decoding failed.\n";
+        return 1;
+    }
 
-	freePixelArray(bytes);
+    if (stbi_write_png(output_file.data(), width, height, nChannels, &(*bytes)[0], nChannels * width) == 0)
+    {
+        std::cerr << "Failed to write PNG file " << output_file << "\n";
+        return 1;
+    }
 
-	fprintf(stdout, "Decoded blurhash successfully, wrote PNG file %s\n", output_file);
-	return 0;
+    return 0;
 }

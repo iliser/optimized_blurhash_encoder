@@ -84,5 +84,5 @@ const std::optional<std::string> blurHashForPixels(
         return std::nullopt;
 
     auto factors = calculateFactors(xComponents,yComponents,width,height,rgb);
-    return encodeBlurhash(factors, xComponents, yComponents);
+    return encodeFactors(factors, xComponents, yComponents);
 }

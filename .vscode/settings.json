@@ -52,6 +52,7 @@
         "cinttypes": "cpp",
         "typeinfo": "cpp",
         "valarray": "cpp",
-        "common.hpp": "c"
+        "common.hpp": "c",
+        "map": "cpp"
     }
 }
