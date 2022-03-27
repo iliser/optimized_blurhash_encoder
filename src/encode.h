@@ -3,7 +3,9 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include <string>
+#include <optional>
 
-const char *blurHashForPixels(int xComponents, int yComponents, int width, int height, uint8_t *rgb, size_t bytesPerRow);
+const std::optional<std::string> blurHashForPixels(size_t xComponents, size_t yComponents, size_t width, size_t height, const uint8_t *rgb);
 
 #endif

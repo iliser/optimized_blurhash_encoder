@@ -1,11 +1,12 @@
 #include "decode.h"
-#include "common.h"
+#include "common.hpp"
 #include <math.h>
 
-#include "fast_cos.h"
+#include "fast_cos.hpp"
 
-static char chars[83] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqr"
-                        "stuvwxyz#$%*+,-.:;=?@[]^_{|}~";
+static char chars[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrst"
+                      "uvwxyz#$%*+,-.:;=?@[]^_{|}~";
+
 
 static inline uint8_t clampToUByte(int *src) {
   if (*src >= 0 && *src <= 255)

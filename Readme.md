@@ -10,7 +10,7 @@ using an FFI interface. Currently the Python integration uses this code.
 
 ## Usage as a library
 
-Include the `encode.c` and `encode.h` files in your project. They have no external dependencies.
+Include the `encode.cpp` and `encode.h` files in your project. They have no external dependencies.
 
 A single file function is defined:
 
