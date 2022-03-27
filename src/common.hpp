@@ -266,13 +266,11 @@ static const float srgb_to_linear_table[] = {
     1,
 };
 
-static inline int linearTosRGB(float value)
+static inline uint8_t linearTosRGB(float value)
 {
     float v = fmaxf(0, fminf(1, value));
-    if (v <= 0.0031308)
-        return v * 12.92 * 255 + 0.5;
-    else
-        return (1.055 * powf(v, 1 / 2.4) - 0.055) * 255 + 0.5;
+    int ret = (v <= 0.0031308) ? v * 12.92 * 255 + 0.5 : (1.055 * powf(v, 1 / 2.4) - 0.055) * 255 + 0.5;
+    return std::clamp<int>(ret, 0, 255);
 }
 
 static inline float sRGBToLinear(int value)
@@ -307,4 +305,42 @@ struct Factor
     {
         return max() < o.max();
     }
+
+    Factor operator+(const Factor &o) const
+    {
+        return {r + o.r, g + o.g, b + o.b};
+    }
+
+    Factor operator*(float m) const
+    {
+        return {r * m, g * m, b * m};
+    }
 };
+
+struct RGBColor
+{
+    uint8_t r, g, b;
+
+    operator int()
+    {
+        return (r << 16) + (g << 8) + b;
+    }
+};
+
+static inline RGBColor linearTosRGBFactor(const Factor &value)
+{
+    return {
+        linearTosRGB(value.r),
+        linearTosRGB(value.g),
+        linearTosRGB(value.b),
+    };
+}
+
+static inline Factor sRGBToLinearFactor(const uint8_t values[3])
+{
+    return {
+        srgb_to_linear_table[values[0]],
+        srgb_to_linear_table[values[1]],
+        srgb_to_linear_table[values[2]],
+    };
+}
