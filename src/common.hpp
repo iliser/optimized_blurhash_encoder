@@ -292,7 +292,7 @@ static inline float signPow(float value, float exp)
     return copysignf(powf(fabsf(value), exp), value);
 }
 
-struct Factor
+struct LinearColor
 {
     float r, g, b;
 
@@ -301,17 +301,17 @@ struct Factor
         return std::max({r, g, b});
     }
 
-    bool operator<(const Factor &o) const
+    bool operator<(const LinearColor &o) const
     {
         return max() < o.max();
     }
 
-    Factor operator+(const Factor &o) const
+    LinearColor operator+(const LinearColor &o) const
     {
         return {r + o.r, g + o.g, b + o.b};
     }
 
-    Factor operator*(float m) const
+    LinearColor operator*(float m) const
     {
         return {r * m, g * m, b * m};
     }
@@ -327,7 +327,7 @@ struct RGBColor
     }
 };
 
-static inline RGBColor linearTosRGBFactor(const Factor &value)
+static inline RGBColor linearTosRGBColor(const LinearColor &value)
 {
     return {
         linearTosRGB(value.r),
@@ -336,7 +336,7 @@ static inline RGBColor linearTosRGBFactor(const Factor &value)
     };
 }
 
-static inline Factor sRGBToLinearFactor(const uint8_t values[3])
+static inline LinearColor sRGBPtrToLinearColor(const uint8_t values[3])
 {
     return {
         srgb_to_linear_table[values[0]],

@@ -46,7 +46,7 @@ int main(int argc, const char **argv)
         return 1;
     }
 
-    std::cout << *hash << '\n';
+    std::cout << *hash;
 
     return 0;
 }

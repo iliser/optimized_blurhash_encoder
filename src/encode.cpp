@@ -6,7 +6,7 @@
 #include "fast_cos.hpp"
 #include "blurhash_string.hpp"
 
-std::valarray<Factor> calculateFactors(
+std::valarray<LinearColor> calculateFactors(
     size_t xComponents, size_t yComponents,
     size_t width, size_t height,
     const uint8_t *rgb)
@@ -16,7 +16,7 @@ std::valarray<Factor> calculateFactors(
     if (xComponents < 1 || xComponents > 9 || yComponents < 1 || yComponents > 9)
         throw "";
 
-    std::valarray<Factor> factors(yComponents * xComponents);
+    std::valarray<LinearColor> factors(yComponents * xComponents);
     auto rgb_ptr = rgb;
 
     for (size_t y = 0; y < height; ++y)
@@ -25,12 +25,12 @@ std::valarray<Factor> calculateFactors(
         {
             // with loop revert this convert operation execute only once per channel
             // vs yComponents * xComponents times before
-            Factor color = sRGBToLinearFactor(rgb_ptr);
+            LinearColor color = sRGBPtrToLinearColor(rgb_ptr);
             rgb_ptr += 3;
 
             // extract this factor from inner loop give another ~30% boost
-            float yf = M_PI * y / height;
             float xf = M_PI * x / width;
+            float yf = M_PI * y / height;
 
             // order of internal loop does't care cause of `cos` is `high cost`
             // operation

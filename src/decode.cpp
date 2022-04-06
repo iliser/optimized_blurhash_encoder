@@ -14,7 +14,7 @@ std::optional<std::valarray<uint8_t>> decode(
     if (auto res = decodeFactors(blurhash, punch))
     {
         auto ret = std::valarray<uint8_t>(255, width * height * nChannels);
-        const auto [factors, numX, numY] = *res;
+        const auto [factors, xComponents, yComponents] = *res;
 
         auto iter = std::begin(ret);
 
@@ -23,24 +23,24 @@ std::optional<std::valarray<uint8_t>> decode(
             for (size_t x = 0; x < width; ++x)
             {
 
-                Factor color{0,0,0};
+                LinearColor color{0, 0, 0};
 
-                float xm = M_PI * x / width;
-                float ym = M_PI * y / height;
+                float xf = M_PI * x / width;
+                float yf = M_PI * y / height;
 
                 auto factor_iter = std::begin(factors);
 
-                for (size_t j = 0; j < numY; ++j)
+                for (size_t yc = 0; yc < yComponents; ++yc)
                 {
-                    for (size_t i = 0; i < numX; ++i)
+                    for (size_t xc = 0; xc < xComponents; ++xc)
                     {
-                        float basis = fast_cos(xm * i) * fast_cos(ym * j);
+                        float basis = fast_cos(xf * xc) * fast_cos(yf * yc);
                         auto &factor = *(factor_iter++);
 
                         color = color + factor * basis;
                     }
                 }
-                auto rgb = linearTosRGBFactor(color);
+                auto rgb = linearTosRGBColor(color);
                 *(iter++) = rgb.r;
                 *(iter++) = rgb.g;
                 *(iter++) = rgb.b;

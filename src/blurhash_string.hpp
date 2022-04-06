@@ -42,9 +42,9 @@ class BlurhashWriter
             divisor /= 83;
         }
     }
-    int encodeDC(const Factor &clr) { return linearTosRGBFactor(clr); }
+    int encodeDC(const LinearColor &clr) { return linearTosRGBColor(clr); }
 
-    int encodeAC(const Factor &clr, float maximumValue)
+    int encodeAC(const LinearColor &clr, float maximumValue)
     {
         const auto normalize = [=](float v)
         {
@@ -66,15 +66,15 @@ public:
         if (max != 0)
             this->max = ((float)qmv + 1) / 166;
     }
-    void writeDC(const Factor &factor) { writeInt(encodeDC(factor), 4); }
-    void writeAC(const Factor &factor) { writeInt(encodeAC(factor, max), 2); }
+    void writeDC(const LinearColor &factor) { writeInt(encodeDC(factor), 4); }
+    void writeAC(const LinearColor &factor) { writeInt(encodeAC(factor, max), 2); }
 
     std::string result() { return buffer; }
 };
 
 static std::string
 encodeFactors(
-    const std::valarray<Factor> &factors,
+    const std::valarray<LinearColor> &factors,
     size_t xComponents, size_t yComponents)
 {
 
@@ -86,7 +86,7 @@ encodeFactors(
     const auto acFactors = factors | std::views::drop(1);
 
     // write maximum value
-    writer.wirteMax(acCount > 0 ? std::ranges::max(acFactors, {}, &Factor::max).max() : 0);
+    writer.wirteMax(acCount > 0 ? std::ranges::max(acFactors, {}, &LinearColor::max).max() : 0);
 
     // write initial factors `DC`
     writer.writeDC(factors[0]);
@@ -132,7 +132,7 @@ class BlurhashReader
         return value;
     }
 
-    Factor decodeDC(int value)
+    LinearColor decodeDC(int value)
     {
         return {
             .r = sRGBToLinear(value >> 16),        // R-component
@@ -141,7 +141,7 @@ class BlurhashReader
         };
     }
 
-    Factor decodeAC(int value, float maximumValue)
+    LinearColor decodeAC(int value, float maximumValue)
     {
         int quantR = (int)floorf(value / (19 * 19));
         int quantG = (int)floorf(value / 19) % 19;
@@ -173,7 +173,7 @@ public:
         else
             return std::nullopt;
     }
-    std::optional<Factor> readDC()
+    std::optional<LinearColor> readDC()
     {
         if (auto value = readInt(4))
             return decodeDC(*value);
@@ -181,7 +181,7 @@ public:
             return std::nullopt;
     }
 
-    std::optional<Factor> readAC(float maximumValue)
+    std::optional<LinearColor> readAC(float maximumValue)
     {
         if (auto value = readInt(2))
             return decodeAC(*value, maximumValue);
@@ -190,7 +190,7 @@ public:
     }
 };
 
-std::optional<std::tuple<std::valarray<Factor>, size_t, size_t>>
+std::optional<std::tuple<std::valarray<LinearColor>, size_t, size_t>>
 decodeFactors(std::string_view blurhash, int punch)
 {
     try
@@ -213,7 +213,7 @@ decodeFactors(std::string_view blurhash, int punch)
 
         float maxValue = reader.readMaxValue().value();
 
-        std::valarray<Factor> factors(numX * numY);
+        std::valarray<LinearColor> factors(numX * numY);
 
         if (auto value = reader.readDC())
             factors[0] = *value;
