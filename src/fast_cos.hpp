@@ -1,7 +1,7 @@
 #pragma once
 
 /* uncomment the next line if you're on a big-endian system */
-/* #define BIG_ENDIAN */
+/* #define _OBH_BIG_ENDIAN */
 
 /* uncomment the next line if you can not assume double-precision FPU or IEEE754
  */
@@ -19,6 +19,9 @@ typedef __int32 int32_t;
 #include <stdint.h>
 #endif
 
+// #define NO_FAST_TRUNCATE
+
+// with this hacks in fast_round fast_sin work faster then native sinf
 inline int32_t fast_round(double x)
 {
 
@@ -27,15 +30,20 @@ inline int32_t fast_round(double x)
     const double MAGIC_ROUND =
         6755399441055744.0; /* http://stereopsis.com/sree/fpu2006.html */
 
+    // yeah undefined behaviors hacks thats significanlty speed up code
     union
     {
         double d;
 
-//  TODO swap lw and hw for BIG_ENDIAN
         struct
         {
+#ifndef _OBH_BIG_ENDIAN
             int32_t lw;
             int32_t hw;
+#elif
+            int32_t hw;
+            int32_t lw;
+#endif
         };
     } fast_trunc;
 
@@ -58,7 +66,8 @@ inline int32_t fast_round(double x)
 #endif
 }
 
-inline double fast_sin(double x)
+inline double
+fast_sin(double x)
 {
     const double PI = 3.14159265358979323846264338327950288;
     const double INVPI = 0.31830988618379067153776752674502872;
@@ -80,4 +89,7 @@ inline double fast_sin(double x)
     return k & 1 ? -x : x;
 }
 
-inline double fast_cos(double x) { return fast_sin(1.57079632 - x); }
+inline double fast_cos(double x) { 
+    // `fast_sin` magic faster on ~40% then `cosf`
+    return fast_sin(1.57079632 - x);
+}

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common.hpp"
+#include "color_models.hpp"
 
 #include <valarray>
 #include <algorithm>
@@ -42,7 +42,7 @@ class BlurhashWriter
             divisor /= 83;
         }
     }
-    int encodeDC(const LinearColor &clr) { return linearTosRGBColor(clr); }
+    int encodeDC(const LinearColor &clr) { return clr.toRGBColor().toInt(); }
 
     int encodeAC(const LinearColor &clr, float maximumValue)
     {

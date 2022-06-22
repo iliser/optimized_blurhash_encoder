@@ -1,5 +1,5 @@
 #include "decode.h"
-#include "common.hpp"
+#include "color_models.hpp"
 #include <math.h>
 
 #include "blurhash_string.hpp"
@@ -40,7 +40,7 @@ std::optional<std::valarray<uint8_t>> decode(
                         color = color + factor * basis;
                     }
                 }
-                auto rgb = linearTosRGBColor(color);
+                auto rgb = color.toRGBColor();
                 *(iter++) = rgb.r;
                 *(iter++) = rgb.g;
                 *(iter++) = rgb.b;

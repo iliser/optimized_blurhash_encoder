@@ -1,5 +1,5 @@
 #include "encode.h"
-#include "common.hpp"
+#include "color_models.hpp"
 
 #include <valarray>
 
@@ -25,7 +25,7 @@ std::valarray<LinearColor> calculateFactors(
         {
             // with loop revert this convert operation execute only once per channel
             // vs yComponents * xComponents times before
-            LinearColor color = sRGBPtrToLinearColor(rgb_ptr);
+            LinearColor color = LinearColor::fromRGBPtr(rgb_ptr);
             rgb_ptr += 3;
 
             // extract this factor from inner loop give another ~30% boost
