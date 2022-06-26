@@ -53,6 +53,8 @@
         "typeinfo": "cpp",
         "valarray": "cpp",
         "common.hpp": "c",
-        "map": "cpp"
+        "map": "cpp",
+        "complex": "cpp",
+        "hash_map": "cpp"
     }
 }

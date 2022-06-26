@@ -27,7 +27,8 @@ struct RGBColor
 
 struct LinearColor 
 {
-    float r, g, b;
+    // alpha channel for better match sse instructions
+    float r, g, b, a;
 
     inline float max() const
     {
@@ -41,12 +42,12 @@ struct LinearColor
 
     LinearColor operator+(const LinearColor &o) const
     {
-        return {r + o.r, g + o.g, b + o.b};
+        return {r + o.r, g + o.g, b + o.b, a + o.a};
     }
 
     LinearColor operator*(float m) const
     {
-        return {r * m, g * m, b * m};
+        return {r * m, g * m, b * m, a * m};
     }
 
     inline static LinearColor fromRGBPtr(const uint8_t values[3])
@@ -67,12 +68,3 @@ struct LinearColor
         };
     }
 };
-
-LinearColor linearColorFromRGBPtr(const uint8_t values[3])
-    {
-        return {
-            srgb_to_linear_table[values[0]],
-            srgb_to_linear_table[values[1]],
-            srgb_to_linear_table[values[2]],
-        };
-    }
