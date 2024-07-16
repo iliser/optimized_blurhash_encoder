@@ -1,3 +1,5 @@
+#pragma once 
+
 #include <cmath>
 #include <array>
 
@@ -19,7 +21,7 @@ static inline uint8_t linearTosRGB(float value)
 }
 
 // initialize srgb_to_linear_color_table for speed up conversion
-auto _initArray()
+static auto _initArray()
 {
     std::array<float, 256> array;
     for (size_t i = 0; i < 256; ++i)
@@ -35,3 +37,4 @@ static inline float sRGBToLinear(int value)
 {
     return srgb_to_linear_table[value];
 }
+
